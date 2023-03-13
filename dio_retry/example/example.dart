@@ -14,7 +14,7 @@ main() async {
   // Add the interceptor with optional options
   dio.interceptors.add(RetryInterceptor(
     dio: dio,
-    logger: Logger("Retry"),
+    // logger: Logger("Retry"),
     options: const RetryOptions(
       retryInterval: const Duration(seconds: 5),
     ),

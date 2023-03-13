@@ -11,24 +11,25 @@ class RetryOptions {
   /// The interval before a retry.
   final Duration retryInterval;
 
-  /// Evaluating if a retry is necessary.regarding the error. 
-  /// 
-  /// It can be a good candidate for additional operations too, like 
-  /// updating authentication token in case of a unauthorized error (be careful 
-  /// with concurrency though). 
-  /// 
+  /// Evaluating if a retry is necessary.regarding the error.
+  ///
+  /// It can be a good candidate for additional operations too, like
+  /// updating authentication token in case of a unauthorized error (be careful
+  /// with concurrency though).
+  ///
   /// Defaults to [defaultRetryEvaluator].
-  RetryEvaluator get retryEvaluator => this._retryEvaluator ?? defaultRetryEvaluator;
+  RetryEvaluator get retryEvaluator =>
+      _retryEvaluator ?? defaultRetryEvaluator;
 
-  final RetryEvaluator _retryEvaluator;
+  final RetryEvaluator? _retryEvaluator;
 
   const RetryOptions(
       {this.retries = 3,
-      RetryEvaluator retryEvaluator,
+      RetryEvaluator? retryEvaluator,
       this.retryInterval = const Duration(seconds: 1)})
       : assert(retries != null),
         assert(retryInterval != null),
-        this._retryEvaluator = retryEvaluator;
+        _retryEvaluator = retryEvaluator;
 
   factory RetryOptions.noRetry() {
     return RetryOptions(
@@ -41,16 +42,17 @@ class RetryOptions {
   /// Returns [true] only if the response hasn't been cancelled or got
   /// a bas status code.
   static FutureOr<bool> defaultRetryEvaluator(DioError error) {
-    return error.type != DioErrorType.CANCEL && error.type != DioErrorType.RESPONSE;
+    return error.type != DioErrorType.cancel &&
+        error.type != DioErrorType.response;
   }
 
   factory RetryOptions.fromExtra(RequestOptions request) {
-    return request.extra[extraKey];
+    return request.extra[extraKey] as RetryOptions;
   }
 
   RetryOptions copyWith({
-    int retries,
-    Duration retryInterval,
+    int? retries,
+    Duration? retryInterval,
   }) =>
       RetryOptions(
         retries: retries ?? this.retries,
@@ -58,22 +60,16 @@ class RetryOptions {
       );
 
   Map<String, dynamic> toExtra() {
-    return {
+    return <String, dynamic>{
       extraKey: this,
     };
   }
 
   Options toOptions() {
-    return Options(
-      extra: this.toExtra()
-    );
+    return Options(extra: toExtra());
   }
 
-  Options mergeIn(Options options) {
-    return options.merge(
-      extra: <String,dynamic>{}
-        ..addAll(options.extra ?? {})
-        ..addAll(this.toExtra())
-    );
-  }
+  // Options mergeIn(Options options) {
+  //   return options.merge(extra: <String, dynamic>{}..addAll(options.extra ?? <String, dynamic>{})..addAll(toExtra()));
+  // }
 }
